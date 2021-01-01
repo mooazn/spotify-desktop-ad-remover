@@ -84,7 +84,6 @@ while True:
         time.sleep(5)
         continue
     if not is_track:
-        windll.user32.BlockInput(True)  # enable block
         print('Reopening Spotify...')
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
@@ -99,10 +98,10 @@ while True:
                     if cur_line_parts[j] != '':
                         fixed.append(cur_line_parts[j])
                 p_ids.append(fixed[3])
-
         for p_id in p_ids:
             os.kill(int(p_id), signal.SIGABRT)
         subprocess.Popen(loc + '\\Spotify.exe', cwd=loc, shell=True)
+        windll.user32.BlockInput(True)  # enable block
         while True:
             pid = win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())
             name = psutil.Process(pid[-1]).name()
