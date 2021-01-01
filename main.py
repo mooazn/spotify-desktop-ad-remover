@@ -10,6 +10,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
 from ctypes import *
+import psutil
+import win32process
+import win32gui
+import atexit
+
+"""
+below is not necessary. you can simply put the location of Spotify inside the loc
+variable if you don't want to run the below commands
 
 command = 'dir spotify.exe /s | findstr "Directory of .:[.]*"'
 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True, cwd='/')
@@ -24,7 +32,9 @@ f.close()
 f = open('spotify_loc.txt', 'r')
 loc = f.read()
 f.close()
-# loc = 'The Location Of Spotify'  # just use your file location if making .bat file, otherwise above is fine
+"""
+
+loc = 'Location of Spotify, i.e. -> C:\\Users\\name\\AppData\\Roaming\\Spotify'  # just use your file location if making .bat file
 
 installer = ChromeDriverManager().install()
 options = Options()
@@ -34,14 +44,14 @@ driver.get('https://accounts.spotify.com/en/login/')
 driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
-time.sleep(2)
+time.sleep(3)
 
 
 def generate_new_token():
     print('Generating new token...')
     driver.get('https://developer.spotify.com/console/get-users-currently-playing-track/')
     driver.find_element_by_xpath('//*[@id="console-form"]/div[3]/div/span/button').click()
-    time.sleep(2)
+    time.sleep(3)
     driver.find_element_by_xpath('//*[@id="oauth-modal"]/div/div/div[2]/form/div[1]/div/div/div/div/label').click()
     driver.find_element_by_xpath('//*[@id="oauthRequestToken"]').click()
     token = driver.find_element_by_xpath('//*[@id="oauth-input"]').get_attribute('value')
@@ -64,12 +74,18 @@ while True:
     response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     try:
         is_track = True if json.loads(response.text)['currently_playing_type'] == 'track' else False
-    except KeyError:
+    except Exception as e:
+        if e == 'currently_playing_type':
+            print('Encountered error. Re-registering token.')
+            headers['Authorization'] = 'Bearer ' + generate_new_token()
+            new_token_registered = int(time.time())
+        else:
+            print('ERROR:', e)
         time.sleep(5)
         continue
     if not is_track:
-        print('Reopening Spotify...')
         windll.user32.BlockInput(True)  # enable block
+        print('Reopening Spotify...')
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
         a_ = a.split('\\r\\r\\n')
@@ -86,12 +102,16 @@ while True:
 
         for p_id in p_ids:
             os.kill(int(p_id), signal.SIGABRT)
-
         subprocess.Popen(loc + '\\Spotify.exe', cwd=loc, shell=True)
-        pyautogui.sleep(7)
+        while True:
+            pid = win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())
+            name = psutil.Process(pid[-1]).name()
+            if name == 'Spotify.exe':
+                break
         windll.user32.BlockInput(False)  # disable block
         pyautogui.sleep(1)
         pyautogui.press('space')
+        pyautogui.sleep(2)
         pyautogui.getActiveWindow().minimize()
     else:
         print('Playing track...')
@@ -100,3 +120,9 @@ while True:
         new_token_registered = int(time.time())
         continue
     time.sleep(10)
+
+
+@atexit.register
+def close_driver():
+    driver.quit()
+    print('Driver Closed...')
