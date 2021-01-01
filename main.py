@@ -9,11 +9,9 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
-from ctypes import *
-import psutil
 import win32process
-import win32gui
 import atexit
+import win32con
 
 """
 below is not necessary. you can simply put the location of Spotify inside the loc
@@ -35,7 +33,6 @@ f.close()
 """
 
 loc = 'Location of Spotify, i.e. -> C:\\Users\\name\\AppData\\Roaming\\Spotify'  # just use your file location if making .bat file
-
 installer = ChromeDriverManager().install()
 options = Options()
 options.headless = True
@@ -99,18 +96,16 @@ while True:
                         fixed.append(cur_line_parts[j])
                 p_ids.append(fixed[3])
         for p_id in p_ids:
-            os.kill(int(p_id), signal.SIGABRT)
-        subprocess.Popen(loc + '\\Spotify.exe', cwd=loc, shell=True)
-        windll.user32.BlockInput(True)  # enable block
-        while True:
-            pid = win32process.GetWindowThreadProcessId(win32gui.GetForegroundWindow())
-            name = psutil.Process(pid[-1]).name()
-            if name == 'Spotify.exe':
-                break
-        windll.user32.BlockInput(False)  # disable block
-        pyautogui.sleep(1)
+            os.kill(int(p_id), signal.SIGTERM)
+        si = win32process.STARTUPINFO()
+        si.dwFlags = win32con.STARTF_USESHOWWINDOW
+        si.wShowWindow = win32con.SW_MAXIMIZE
+        h_proc, h_thr, pid, tid = win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, si)
+        time.sleep(2)
+        while str(pyautogui.getActiveWindowTitle()) != 'Spotify Free':
+            pyautogui.getWindowsWithTitle('Spotify Free')[0].maximize()
         pyautogui.press('space')
-        pyautogui.sleep(2)
+        pyautogui.sleep(1)
         pyautogui.getActiveWindow().minimize()
     else:
         print('Playing track...')
@@ -124,4 +119,3 @@ while True:
 @atexit.register
 def close_driver():
     driver.quit()
-    print('Driver Closed...')
