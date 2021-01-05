@@ -12,6 +12,7 @@ import time
 import win32process
 import atexit
 import win32con
+import win32gui
 
 
 """
@@ -44,6 +45,10 @@ driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
 time.sleep(3)
+
+
+def windowEnumerationHandler(hwnd, top):
+    top.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
 def generate_new_token():
@@ -104,9 +109,14 @@ while True:
         si.wShowWindow = win32con.SW_MAXIMIZE
         h_proc, h_thr, pid, tid = win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, si)
         time.sleep(2)
-        while not pyautogui.getWindowsWithTitle('Spotify Free')[0].isActive:
-            pyautogui.getWindowsWithTitle('Spotify Free')[0].maximize()
-        pyautogui.sleep(2)
+        results = []
+        top_windows = []
+        win32gui.EnumWindows(windowEnumerationHandler, top_windows)
+        for i in top_windows:
+            if i[1] == 'Spotify Free':
+                win32gui.SetForegroundWindow(i[0])
+                break
+        pyautogui.sleep(1)
         pyautogui.press('space')
         pyautogui.sleep(1)
         pyautogui.getActiveWindow().minimize()
