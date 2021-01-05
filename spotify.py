@@ -113,7 +113,10 @@ while True:
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
         for i in top_windows:
             if i[1] == 'Spotify Free':
+                shell = win32com.client.Dispatch("WScript.Shell")
+                shell.SendKeys('%')
                 win32gui.SetForegroundWindow(i[0])
+                win32gui.ShowWindow(i[0], win32con.SW_MAXIMIZE)
                 break
         pyautogui.sleep(1)
         pyautogui.press('space')
