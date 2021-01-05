@@ -109,7 +109,6 @@ while True:
         si.wShowWindow = win32con.SW_MAXIMIZE
         h_proc, h_thr, pid, tid = win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, si)
         time.sleep(2)
-        results = []
         top_windows = []
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
         for i in top_windows:
