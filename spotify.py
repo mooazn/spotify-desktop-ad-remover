@@ -95,13 +95,8 @@ while True:
         p_ids = []
         for i in a_:
             if "Spotify.exe" in i:
-                cur_line = i
-                cur_line_parts = cur_line.split(" ")
-                fixed = []
-                for j in range(len(cur_line_parts)):
-                    if cur_line_parts[j] != '':
-                        fixed.append(cur_line_parts[j])
-                p_ids.append(fixed[3])
+                cur_line_parts = i.split()
+                p_ids.append(cur_line_parts[3])
         for p_id in p_ids:
             os.kill(int(p_id), signal.SIGTERM)
         si = win32process.STARTUPINFO()
