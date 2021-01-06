@@ -125,9 +125,9 @@ while True:
         is_new_thing_track = True if json.loads(response.text)['currently_playing_type'] == 'track' else False
         if is_new_thing_track:
             new_song_id = json.loads(new_response.text)['item']['id']
-            if str(song_id) == str(new_song_id):
+            if str(song_id) == str(new_song_id):  # if the song is the same as the one that was playing before the ad, skip it (ctrl + right) is the shortcut
                 print('Skipping song...')
-                pyautogui.keyDown('alt')
+                pyautogui.keyDown('ctrl')
                 pyautogui.sleep(0.2)
                 pyautogui.press('right')
                 pyautogui.sleep(0.2)
