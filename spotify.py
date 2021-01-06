@@ -131,7 +131,7 @@ while True:
                 pyautogui.sleep(0.2)
                 pyautogui.press('right')
                 pyautogui.sleep(0.2)
-                pyautogui.keyUp('alt')
+                pyautogui.keyUp('ctrl')
                 pyautogui.sleep(0.1)
             print('Playing track...')
         pyautogui.getActiveWindow().minimize()
