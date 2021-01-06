@@ -1,7 +1,6 @@
 import requests
 import json
 import subprocess
-# import re - necessary if commented code is uncommented
 import os
 import signal
 import pyautogui
@@ -13,11 +12,13 @@ import win32process
 import atexit
 import win32con
 import win32gui
-
+import win32com.client
+# import re - necessary if commented code below is uncommented
 
 """
 below is not necessary. you can simply put the location of Spotify inside the loc
-variable if you don't want to run the below commands
+variable if you don't want to run the below commands. if you do run below, it is only
+meant to be run ONCE since result is stored in a file.
 
 command = 'dir spotify.exe /s | findstr "Directory of .:[.]*"'
 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True, cwd='/')
@@ -34,7 +35,7 @@ loc = f.read()
 f.close()
 """
 
-loc = 'Location of Spotify, i.e. -> C:\\Users\\name\\AppData\\Roaming\\Spotify'  # just use your file location if making .bat file
+loc = 'Location of Spotify, i.e. -> C:\\Users\\USERNAME\\AppData\\Roaming\\Spotify'  # just use your file location if making .bat file
 
 installer = ChromeDriverManager().install()
 options = Options()
@@ -47,7 +48,7 @@ driver.find_element_by_xpath('//*[@id="login-button"]').click()
 time.sleep(3)
 
 
-def windowEnumerationHandler(hwnd, top):
+def windowEnumerationHandler(hwnd, top):  # see line 109
     top.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
@@ -59,6 +60,7 @@ def generate_new_token():
     driver.find_element_by_xpath('//*[@id="oauth-modal"]/div/div/div[2]/form/div[1]/div/div/div/div/label').click()
     driver.find_element_by_xpath('//*[@id="oauthRequestToken"]').click()
     token = driver.find_element_by_xpath('//*[@id="oauth-input"]').get_attribute('value')
+    # driver stays active while script is running (faster since you don't have to keep logging in each time)
     return token
 
 
@@ -72,12 +74,15 @@ if '<token>' in headers['Authorization']:
     headers['Authorization'] = 'Bearer ' + generate_new_token()
 
 new_token_registered = int(time.time())
+song_id = ''
 
 while True:
     print(headers['Authorization'])
     response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     try:
         is_track = True if json.loads(response.text)['currently_playing_type'] == 'track' else False
+        if is_track:
+            song_id = json.loads(response.text)['item']['id']
     except Exception as e:
         if str(e) == '\'currently_playing_type\'':
             print('Encountered error. Re-registering token.')
@@ -98,24 +103,37 @@ while True:
                 cur_line_parts = i.split()
                 p_ids.append(cur_line_parts[3])
         for p_id in p_ids:
-            os.kill(int(p_id), signal.SIGTERM)
-        si = win32process.STARTUPINFO()
-        si.dwFlags = win32con.STARTF_USESHOWWINDOW
-        si.wShowWindow = win32con.SW_MAXIMIZE
-        h_proc, h_thr, pid, tid = win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, si)
+            os.kill(int(p_id), signal.SIGTERM)  # nice
+        win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, win32process.STARTUPINFO())
         time.sleep(2)
+        # for below (and line 51): https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
         top_windows = []
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
         for i in top_windows:
-            if i[1] == 'Spotify Free':
+            if i[1] == 'Spotify Free':  # this is the title of the Spotify window when nothing is playing
                 shell = win32com.client.Dispatch("WScript.Shell")
                 shell.SendKeys('%')
+                # why do above 2 lines work? idk, found it here: https://stackoverflow.com/questions/14295337/win32gui-setactivewindow-error-the-specified-procedure-could-not-be-found
+                time.sleep(1)
                 win32gui.SetForegroundWindow(i[0])
                 win32gui.ShowWindow(i[0], win32con.SW_MAXIMIZE)
                 break
         pyautogui.sleep(1)
         pyautogui.press('space')
         pyautogui.sleep(1)
+        new_response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
+        is_new_thing_track = True if json.loads(response.text)['currently_playing_type'] == 'track' else False
+        if is_new_thing_track:
+            new_song_id = json.loads(new_response.text)['item']['id']
+            if str(song_id) == str(new_song_id):
+                print('Skipping song...')
+                pyautogui.keyDown('alt')
+                pyautogui.sleep(0.2)
+                pyautogui.press('right')
+                pyautogui.sleep(0.2)
+                pyautogui.keyUp('alt')
+                pyautogui.sleep(0.1)
+            print('Playing track...')
         pyautogui.getActiveWindow().minimize()
     else:
         print('Playing track...')
@@ -123,9 +141,9 @@ while True:
         headers['Authorization'] = 'Bearer ' + generate_new_token()
         new_token_registered = int(time.time())
         continue
-    time.sleep(10)
+    time.sleep(10)  # this can be lowered. didn't try because fear of being rate limited.
 
 
 @atexit.register
 def close_driver():
-    driver.quit()
+    driver.quit()  # close
