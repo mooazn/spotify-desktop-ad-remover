@@ -36,6 +36,8 @@ loc = f.read()
 f.close()
 """
 
+SPOTIFY_OPENED_SCREEN_WIDTH = pyautogui.size().width  # width of screen where Spotify was opened.
+
 loc = 'Location of Spotify, i.e. -> C:\\Users\\USERNAME\\AppData\\Roaming\\Spotify'
 
 installer = ChromeDriverManager().install()
@@ -46,10 +48,10 @@ driver.get('https://accounts.spotify.com/en/login/')
 driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # Spotify email/username
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
-time.sleep(3)  # guess this is necessary
+time.sleep(3)
 
 
-def windowEnumerationHandler(hwnd, top):  # see line 111
+def windowEnumerationHandler(hwnd, top):  # see line 118
     top.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
@@ -95,6 +97,11 @@ while True:  # this can be replaced with a check to see if Spotify is running
         continue
     if not is_track:
         print('Reopening Spotify...')
+        if pyautogui.position().x > SPOTIFY_OPENED_SCREEN_WIDTH:
+            cur = pyautogui.position()
+            pyautogui.moveTo(0, 200)  # should be adjusted based on screen (this assumes 1 monitor on right side)
+            pyautogui.click()
+            pyautogui.moveTo(cur.x, cur.y)  # ;)
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
         a_ = a.split('\\r\\r\\n')
@@ -108,7 +115,7 @@ while True:  # this can be replaced with a check to see if Spotify is running
         win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, win32process.STARTUPINFO())
         time.sleep(2)
         # ------
-        # for below (and line 52): https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
+        # for below (and line 54): https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
         top_windows = []
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
         for i in top_windows:
