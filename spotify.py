@@ -98,10 +98,10 @@ while True:  # this can be replaced with a check to see if Spotify is running
     if not is_track:
         print('Reopening Spotify...')
         if pyautogui.position().x > SPOTIFY_OPENED_SCREEN_WIDTH:
-            # cur = pyautogui.position() -- it's fine
+            # cur = pyautogui.position()
             pyautogui.moveTo(0, 200)  # should be adjusted based on screen (this assumes 1 monitor on right side)
             pyautogui.click()
-            # pyautogui.moveTo(cur.x, cur.y) -- failed attempt lol
+            # pyautogui.moveTo(cur.x, cur.y) 
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
         a_ = a.split('\\r\\r\\n')
@@ -131,30 +131,36 @@ while True:  # this can be replaced with a check to see if Spotify is running
         pyautogui.sleep(1)
         pyautogui.press('space')
         pyautogui.sleep(1)
-        if int(time.time() - new_token_registered) >= 3500:  # in the extremely rare case that the token expires while checking for repeat
-            headers['Authorization'] = 'Bearer ' + generate_new_token()
-            new_token_registered = int(time.time())
-        new_response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
-        is_new_thing_track = True if json.loads(new_response.text)['currently_playing_type'] == 'track' else False
-        if is_new_thing_track:
-            new_song_id = json.loads(new_response.text)['item']['id']
-            if str(song_id) == str(new_song_id):  # if the song is the same as the one that was playing before the ad, skip it (ctrl + right) is the shortcut
-                print('Skipping song...')
-                pyautogui.keyDown('ctrl')
-                pyautogui.sleep(0.2)
-                pyautogui.press('right')
-                pyautogui.sleep(0.2)
-                pyautogui.keyUp('ctrl')
-                pyautogui.sleep(0.1)
-            print('Playing track...')
-        pyautogui.getActiveWindow().minimize()
+        try:  # an extra try catch. it isn't necessary to automatically skip track if program is crashing. can be manually skipped so that the program doesn't crash
+            if int(time.time()) - new_token_registered >= 3500:  # in the rare case that the token expires while checking for repeat
+                headers['Authorization'] = 'Bearer ' + generate_new_token()
+                new_token_registered = int(time.time())
+            new_response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
+            is_new_thing_track = True if json.loads(new_response.text)['currently_playing_type'] == 'track' else False
+            if is_new_thing_track:
+                new_song_id = json.loads(new_response.text)['item']['id']
+                if str(song_id) == str(new_song_id):  # if the song is the same as the one that was playing before the ad, skip it (ctrl + right) is the shortcut
+                    print('Skipping song...')
+                    pyautogui.keyDown('ctrl')
+                    pyautogui.sleep(0.2)
+                    pyautogui.press('right')
+                    pyautogui.sleep(0.2)
+                    pyautogui.keyUp('ctrl')
+                    pyautogui.sleep(0.1)
+                print('Playing track...')
+            pyautogui.getActiveWindow().minimize()
+        except Exception as e:
+            pyautogui.getActiveWindow().minimize()  # minimize just in case the program crashes in the try (since track is already playing)
+            print('ERROR:', e)
+            time.sleep(5)
+            continue
     else:
         print('Playing track...')
     if int(time.time()) - new_token_registered >= 3500:  # changed to a little less than an hour just to be safe
         headers['Authorization'] = 'Bearer ' + generate_new_token()
         new_token_registered = int(time.time())
         continue
-    time.sleep(5)
+    time.sleep(5)  # Could be 1...
 
 
 @atexit.register
