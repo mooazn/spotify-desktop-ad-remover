@@ -98,10 +98,10 @@ while True:  # this can be replaced with a check to see if Spotify is running
     if not is_track:
         print('Reopening Spotify...')
         if pyautogui.position().x > SPOTIFY_OPENED_SCREEN_WIDTH:
-            cur = pyautogui.position()
+            # cur = pyautogui.position() -- it's fine
             pyautogui.moveTo(0, 200)  # should be adjusted based on screen (this assumes 1 monitor on right side)
             pyautogui.click()
-            pyautogui.moveTo(cur.x, cur.y)  # ;)
+            # pyautogui.moveTo(cur.x, cur.y) -- failed attempt lol
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
         a_ = a.split('\\r\\r\\n')
