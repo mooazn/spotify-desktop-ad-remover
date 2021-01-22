@@ -79,7 +79,7 @@ if '<token>' in headers['Authorization']:
 new_token_registered = int(time.time())
 song_id = ''
 
-while True:  # this can be replaced with a check to see if Spotify is running
+while True:  # this can be replaced with a check to see if Spotify is running (maybe not, idk)
     print(headers['Authorization'])
     response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     try:
@@ -97,11 +97,11 @@ while True:  # this can be replaced with a check to see if Spotify is running
         continue
     if not is_track:
         print('Reopening Spotify...')
-        if pyautogui.position().x > SPOTIFY_OPENED_SCREEN_WIDTH:
-            # cur = pyautogui.position()
+        cur = None
+        if pyautogui.position().x > SPOTIFY_OPENED_SCREEN_WIDTH:  # this is a biggggggg assumption. doesn't even matter if you're only on local machine.
+            cur = pyautogui.position()  # so we can move cursor back to where it was 
             pyautogui.moveTo(0, 200)  # should be adjusted based on screen (this assumes 1 monitor on right side)
             pyautogui.click()
-            # pyautogui.moveTo(cur.x, cur.y) 
         data = subprocess.check_output(['wmic', 'process', 'list', 'brief'])
         a = str(data).replace('b\'', '').replace('\'', '')
         a_ = a.split('\\r\\r\\n')
@@ -114,7 +114,7 @@ while True:  # this can be replaced with a check to see if Spotify is running
             os.kill(int(p_id), signal.SIGTERM)  # nice
         win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None, win32process.STARTUPINFO())
         time.sleep(2)
-        # ------
+        # ------ code that is really helpful and mostly from SO
         # for below (and line 54): https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
         top_windows = []
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
@@ -125,13 +125,14 @@ while True:  # this can be replaced with a check to see if Spotify is running
                 # why do above 2 lines work? idk, found it here: https://stackoverflow.com/questions/14295337/win32gui-setactivewindow-error-the-specified-procedure-could-not-be-found
                 time.sleep(1)
                 win32gui.SetForegroundWindow(i[0])
+                time.sleep(0.4)
                 win32gui.ShowWindow(i[0], win32con.SW_MAXIMIZE)
                 break
-        # ------
+        # ------ code that is really helpful and mostly from SO
         pyautogui.sleep(1)
         pyautogui.press('space')
         pyautogui.sleep(1)
-        try:  # an extra try catch. it isn't necessary to automatically skip track if program is crashing. can be manually skipped so that the program doesn't crash
+        try:  # an extra try catch. isn't necessary to automatically skip track if program is crashing. can be manually skipped in such a case.
             if int(time.time()) - new_token_registered >= 3500:  # in the rare case that the token expires while checking for repeat
                 headers['Authorization'] = 'Bearer ' + generate_new_token()
                 new_token_registered = int(time.time())
@@ -149,8 +150,12 @@ while True:  # this can be replaced with a check to see if Spotify is running
                     pyautogui.sleep(0.1)
                 print('Playing track...')
             pyautogui.getActiveWindow().minimize()
+            if cur is not None:
+                pyautogui.moveTo(cur.x, cur.y)  # move cursor to where it was
         except Exception as e:
             pyautogui.getActiveWindow().minimize()  # minimize just in case the program crashes in the try (since track is already playing)
+            if cur is not None:  # move cursor back to the other screen just in case the program crashes
+                pyautogui.moveTo(cur.x, cur.y)
             print('ERROR:', e)
             time.sleep(5)
             continue
