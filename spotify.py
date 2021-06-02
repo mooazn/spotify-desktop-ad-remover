@@ -70,9 +70,12 @@ driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # 
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
 time.sleep(3)
-generate_new_token(True)  # dummy call
-driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
-driver.find_element_by_xpath('//*[@id="login-button"]').click()
+try:
+    generate_new_token(True)  # dummy call
+    driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
+    driver.find_element_by_xpath('//*[@id="login-button"]').click()
+except Exception:
+    pass
 time.sleep(3)
 
 headers = {
