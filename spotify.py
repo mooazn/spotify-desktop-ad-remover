@@ -4,8 +4,6 @@ import subprocess
 import os
 import signal
 import pyautogui
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
 import win32process
@@ -14,7 +12,6 @@ import win32con
 import win32gui
 import win32com.client
 import undetected_chromedriver as uc
-
 # import re - necessary if commented code below is uncommented
 
 """
@@ -39,7 +36,7 @@ f.close()
 """
 
 
-def windowEnumerationHandler(hwnd, top):  # see line 118
+def windowEnumerationHandler(hwnd, top):
     top.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
@@ -57,18 +54,18 @@ def generate_new_token():
 
 SPOTIFY_OPENED_SCREEN_WIDTH = pyautogui.size().width  # width of screen where Spotify was opened.
 
-loc = 'C:\\Users\\mooaz\\AppData\\Roaming\\Spotify'
+loc = 'C:\\Users\\USERNAME\\AppData\\Roaming\\Spotify'  # location of where Spotify is stored.
 
 options = Options()
 options.add_argument('log-level=3')
-# options.headless = True
+options.headless = True
+options.add_argument('window-size=1920x1080')  # this helps with headless browser
 driver = uc.Chrome(options=options)
 driver.get('https://www.spotify.com/us/')
-time.sleep(2)
-driver.find_element_by_xpath('/html/body/div[1]/div[1]/header/div/nav/ul/li[6]/a').click()
 time.sleep(1)
+driver.implicitly_wait(5)
+driver.find_element_by_xpath('//*[@id="__next"]/div[1]/header/div/nav/ul/li[6]/a').click()
 driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # Spotify email/username
-time.sleep(1)
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
 time.sleep(2)
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
@@ -80,13 +77,13 @@ headers = {
     'Authorization': 'Bearer <token>'
 }
 
-if '<token>' in headers['Authorization']:
+if '<token>' in headers['Authorization']:  # first time generation
     headers['Authorization'] = 'Bearer ' + generate_new_token()
 
 new_token_registered = int(time.time())
 song_id = ''
 
-while True:  # this can be replaced with a check to see if Spotify is running (maybe not, idk)
+while True:  # this can be replaced with a check to see if Spotify is running
     print(headers['Authorization'])
     response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
     try:
@@ -122,21 +119,21 @@ while True:  # this can be replaced with a check to see if Spotify is running (m
         win32process.CreateProcess(None, loc + '\\Spotify.exe', None, None, False, 0, None, None,
                                    win32process.STARTUPINFO())
         time.sleep(2)
-        # ------ code that is really helpful and mostly from SO
-        # for below (and line 54): https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
+        # ------ start code that is really helpful and mostly from SO
+        # https://stackoverflow.com/questions/54918333/how-to-maximize-an-inactive-window - cosminm's post
         top_windows = []
         win32gui.EnumWindows(windowEnumerationHandler, top_windows)
         for i in top_windows:
             if i[1] == 'Spotify Free':  # this is the title of the Spotify window when nothing is playing
                 shell = win32com.client.Dispatch("WScript.Shell")
                 shell.SendKeys('%')
-                # why do above 2 lines work? idk, found it here: https://stackoverflow.com/questions/14295337/win32gui-setactivewindow-error-the-specified-procedure-could-not-be-found
+                # why do above 2 lines work? found it here: https://stackoverflow.com/questions/14295337/win32gui-setactivewindow-error-the-specified-procedure-could-not-be-found
                 time.sleep(1)
                 win32gui.SetForegroundWindow(i[0])
                 time.sleep(0.4)
                 win32gui.ShowWindow(i[0], win32con.SW_MAXIMIZE)
                 break
-        # ------ code that is really helpful and mostly from SO
+        # ------ end code that is really helpful and mostly from SO
         pyautogui.sleep(1)
         pyautogui.press('space')
         pyautogui.sleep(1)
@@ -170,11 +167,11 @@ while True:  # this can be replaced with a check to see if Spotify is running (m
             continue
     else:
         print('Playing track...')
-    if int(time.time()) - new_token_registered >= 3500:  # changed to a little less than an hour just to be safe
+    if int(time.time()) - new_token_registered >= 3500:
         headers['Authorization'] = 'Bearer ' + generate_new_token()
         new_token_registered = int(time.time())
         continue
-    time.sleep(5)  # Could be 1...
+    time.sleep(5)  # send the req every 5 secondssss
 
 
 @atexit.register
