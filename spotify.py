@@ -43,15 +43,13 @@ def windowEnumerationHandler(hwnd, top):  # see line 118
     top.append((hwnd, win32gui.GetWindowText(hwnd)))
 
 
-def generate_new_token(first):
+def generate_new_token():
     print('Generating new token...')
     driver.get('https://developer.spotify.com/console/get-users-currently-playing-track/')
     driver.find_element_by_xpath('//*[@id="console-form"]/div[3]/div/span/button').click()
     time.sleep(3)
     driver.find_element_by_xpath('//*[@id="oauth-modal"]/div/div/div[2]/form/div[1]/div/div/div/div/label').click()
     driver.find_element_by_xpath('//*[@id="oauthRequestToken"]').click()
-    if first:
-        return
     token = driver.find_element_by_xpath('//*[@id="oauth-input"]').get_attribute('value')
     # driver stays active while script is running (faster since you don't have to keep logging in each time)
     return token
@@ -63,19 +61,17 @@ loc = 'C:\\Users\\mooaz\\AppData\\Roaming\\Spotify'
 
 options = Options()
 options.add_argument('log-level=3')
-options.headless = True
+# options.headless = True
 driver = uc.Chrome(options=options)
-driver.get('https://accounts.spotify.com/en/login/')
+driver.get('https://www.spotify.com/us/')
+time.sleep(2)
+driver.find_element_by_xpath('/html/body/div[1]/div[1]/header/div/nav/ul/li[6]/a').click()
+time.sleep(1)
 driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # Spotify email/username
+time.sleep(1)
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
+time.sleep(2)
 driver.find_element_by_xpath('//*[@id="login-button"]').click()
-time.sleep(3)
-try:
-    generate_new_token(True)  # dummy call
-    driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
-    driver.find_element_by_xpath('//*[@id="login-button"]').click()
-except Exception:
-    pass
 time.sleep(3)
 
 headers = {
@@ -85,7 +81,7 @@ headers = {
 }
 
 if '<token>' in headers['Authorization']:
-    headers['Authorization'] = 'Bearer ' + generate_new_token(False)
+    headers['Authorization'] = 'Bearer ' + generate_new_token()
 
 new_token_registered = int(time.time())
 song_id = ''
@@ -100,7 +96,7 @@ while True:  # this can be replaced with a check to see if Spotify is running (m
     except Exception as e:
         if str(e) == '\'currently_playing_type\'':
             print('Encountered error. Re-registering token.')
-            headers['Authorization'] = 'Bearer ' + generate_new_token(False)
+            headers['Authorization'] = 'Bearer ' + generate_new_token()
             new_token_registered = int(time.time())
         else:
             print('ERROR:', e)
@@ -147,7 +143,7 @@ while True:  # this can be replaced with a check to see if Spotify is running (m
         try:  # an extra try catch. isn't necessary to automatically skip track if program is crashing. can be manually skipped in such a case.
             if int(
                     time.time()) - new_token_registered >= 3500:  # in the rare case that the token expires while checking for repeat
-                headers['Authorization'] = 'Bearer ' + generate_new_token(False)
+                headers['Authorization'] = 'Bearer ' + generate_new_token()
                 new_token_registered = int(time.time())
             new_response = requests.get('https://api.spotify.com/v1/me/player/currently-playing', headers=headers)
             is_new_thing_track = True if json.loads(new_response.text)['currently_playing_type'] == 'track' else False
@@ -175,7 +171,7 @@ while True:  # this can be replaced with a check to see if Spotify is running (m
     else:
         print('Playing track...')
     if int(time.time()) - new_token_registered >= 3500:  # changed to a little less than an hour just to be safe
-        headers['Authorization'] = 'Bearer ' + generate_new_token(False)
+        headers['Authorization'] = 'Bearer ' + generate_new_token()
         new_token_registered = int(time.time())
         continue
     time.sleep(5)  # Could be 1...
