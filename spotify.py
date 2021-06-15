@@ -62,9 +62,10 @@ options.headless = True
 options.add_argument('window-size=1920x1080')  # this helps with headless browser
 driver = uc.Chrome(options=options)
 driver.get('https://www.spotify.com/us/')
-time.sleep(1)
+time.sleep(5)
 driver.implicitly_wait(5)
 driver.find_element_by_xpath('//*[@id="__next"]/div[1]/header/div/nav/ul/li[6]/a').click()
+time.sleep(2)
 driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # Spotify email/username
 driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
 time.sleep(2)
