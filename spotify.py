@@ -59,7 +59,7 @@ loc = 'C:\\Users\\USERNAME\\AppData\\Roaming\\Spotify'  # location of where Spot
 options = Options()
 options.add_argument('log-level=3')
 options.add_argument('window-size=1920x1080')  # this helps with headless browser
-# options.headless = True
+options.headless = True
 driver = uc.Chrome(options=options)
 driver.get('https://www.spotify.com/us/')
 driver.implicitly_wait(5)
