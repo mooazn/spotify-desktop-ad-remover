@@ -58,18 +58,18 @@ loc = 'C:\\Users\\USERNAME\\AppData\\Roaming\\Spotify'  # location of where Spot
 
 options = Options()
 options.add_argument('log-level=3')
-options.headless = True
 options.add_argument('window-size=1920x1080')  # this helps with headless browser
+# options.headless = True
 driver = uc.Chrome(options=options)
 driver.get('https://www.spotify.com/us/')
-time.sleep(5)
 driver.implicitly_wait(5)
 driver.find_element_by_xpath('//*[@id="__next"]/div[1]/header/div/nav/ul/li[6]/a').click()
-time.sleep(2)
-driver.find_element_by_xpath('//*[@id="login-username"]').send_keys('email')  # Spotify email/username
-driver.find_element_by_xpath('//*[@id="login-password"]').send_keys('password')  # Spotify password
-time.sleep(2)
-driver.find_element_by_xpath('//*[@id="login-button"]').click()
+driver.implicitly_wait(2)
+driver.find_element_by_xpath('//*[@id="app"]/body/div[1]/div[2]/div/div[2]/div/a').click()
+driver.implicitly_wait(2)
+driver.find_element_by_xpath('//*[@id="email"]').send_keys('email')  # facebook email
+driver.find_element_by_xpath('//*[@id="pass"]').send_keys('password')  # facebook password
+driver.find_element_by_xpath('//*[@id="loginbutton"]').click()
 time.sleep(3)
 
 headers = {
