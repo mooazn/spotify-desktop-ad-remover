@@ -13,16 +13,16 @@ This project started out as a simple idea to skip ads when I'm listening to Spot
 5. The browser logs into the linked Facebook account for the user with the correct credentials
 6. The browser navigates to the developer API (specifically, https://developer.spotify.com/console/get-users-currently-playing-track/)
 7. The browser clicks "Get Token" and selects the "user-read-currently-playing" scope
-9. The browser then clicks "Request Token"
-10. We store the time that we got the token
-11. Since the user is logged in, the value in the OAuth Token field is the user's OAuth Token
-12. The browser stops doing stuff (but continues to stay there). You can think of it as the browser sleeping on the webpage **
-13. The code hits the API endpoint (https://api.spotify.com/v1/me/player/currently-playing) with the appropriate headers (one of them is the OAuth Token)
-14. We get "currently_playing_type" from the JSON data and if it is != "track", we continue to 13. If it is == "track", go to 17 ***
-15. We close Spotify and reopen it (we also skip the song if it was the same song playing before the ad occured) ****
-16. We check if it's been 3500 seconds since we registered a new token. If it has, go to 17. If not, go to 13
-17. Go to step 6. This resets the token.
-18. Close and quit browser when user closes the program
+8. The browser then clicks "Request Token"
+9. We store the time that we got the token
+10. Since the user is logged in, the value in the OAuth Token field is the user's OAuth Token
+11. The browser stops doing stuff (but continues to stay there). You can think of it as the browser sleeping on the webpage **
+12. The code hits the API endpoint (https://api.spotify.com/v1/me/player/currently-playing) with the appropriate headers (one of them is the OAuth Token)
+13. We get "currently_playing_type" from the JSON data and if it is != "track", we continue to 14. If it is == "track", go to 12 ***
+14. We close Spotify and reopen it (we also skip the song if it was the same song playing before the ad occured) ****
+15. We check if it's been 3500 seconds since we registered a new token. If it has, continue to 16. If not, go to 12
+16. Go to step 6. This resets the token.
+17. Close and quit browser when user closes the program
 
 _*_ = This was something that took some time to discover and understand. Spotify's login is extremely weird. I went through "hours" of trouble trying to login to Spotify through Selenium only to be met with some sort of error. Sometimes, this error did not occur. However, it had become a prominent issue and it was annoying since the program kept crashing since logging in was not working. At one point, I thought I had found a hack where I could go back to the login page after doing something and login. This worked for a while but broke as well for some reason. Whatever, logging in through Facebook is the easiest option. Unfortunately, this requires that your Spotify is linked to a Facebook account. However, I believe that even making a dummy account and linking it should be good enough.
 
