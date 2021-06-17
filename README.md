@@ -21,7 +21,7 @@ This project started out as a simple idea to skip ads when I'm listening to Spot
 13. We get "currently_playing_type" from the JSON data and if it is != "track", we continue to 14. If it is == "track", go to 12 ***
 14. We close Spotify and reopen it (we also skip the song if it was the same song playing before the ad occured) ****
 15. We check if it's been 3500 seconds since we registered a new token. If it has, continue to 16. If not, go to 12
-16. Go to step 6. This resets the token.
+16. Go to step 6. This resets the token
 17. Close and quit browser when user closes the program
 
 _*_ = This was something that took some time to discover and understand. Spotify's login is extremely weird. I went through "hours" of trouble trying to login to Spotify through Selenium only to be met with some sort of error. Sometimes, this error did not occur. However, it had become a prominent issue and it was annoying since the program kept crashing since logging in was not working. At one point, I thought I had found a hack where I could go back to the login page after doing something and login. This worked for a while but broke as well for some reason. Whatever, logging in through Facebook is the easiest option. Unfortunately, this requires that your Spotify is linked to a Facebook account. However, I believe that even making a dummy account and linking it should be good enough.
@@ -34,9 +34,9 @@ _*_ = This was something that took some time to discover and understand. Spotify
 
 2 things...
 
-I created a really simple batch script which runs the program in the background and has the selenium-based browser as headless. Check out the script for more information. 
+**I created a really simple batch script which runs the program in the background and has the selenium-based browser as headless. Check out the script for more information.** 
 
-Although I have tried to implement error handling as best as possible, this program sometimes crashes for "some" reason. 
+**Although I have tried to implement error handling as best as possible, this program sometimes crashes for "some" reason.**
 
 Simple Workflow (assuming you do not have batch script):
 
