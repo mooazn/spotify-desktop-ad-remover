@@ -43,7 +43,7 @@ Simple Workflow (assuming you do not have batch script):
 1. Run the code. Make sure you have all libraries installed, the chromedriver, the correct location of Spotify, and the correct credentials for Facebook
 2. Open Spotify and start listening
 
-Simple Workflow (Assuming you have the batch script):
+Simple Workflow (assuming you have the batch script):
 
 1. Make sure you have all libraries installed, the chromedriver, the correct location of Spotify, and the correct credentials for Facebook. 
 2. Run the batch file.
