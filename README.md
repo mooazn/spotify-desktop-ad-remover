@@ -32,11 +32,13 @@ _*_ = This was something that took some time to discover and understand. Spotify
 
 **** = We store the song ID of whatever was playing when we hit the API. Once an ad is encountered and we reopen Spotify, we check if the new Song ID is the same as the one that was playing before the ad (this is because the API finds out that an ad is playing faster than it actually plays it if timed correctly). If the two songs IDs are the same, we simply skip the current song ID because it is a repeat. We assume that the next song is not the same as the current one. Even if it was, no big deal. The funny thing about Spotify is that if you play the same song over and over (you have it on repeat current track), then you will never ever get an ad. 
 
-2 things...
+3 things...
 
-**I created a really simple batch script which runs the program in the background and has the selenium-based browser as headless. Check out the script for more information.** 
+> **I created a really simple batch script which runs the program in the background and has the selenium-based browser as headless. Check out the script for more information.** 
 
-**Although I have tried to implement error handling as best as possible, this program sometimes crashes for "some" reason.**
+> **Although I have tried to implement error handling as best as possible, this program sometimes crashes for "some" reason.**
+
+> **Spotify can, at any time, change the way their application works. For any Spotify account on any platform, you can simply close and reopen it to "skip" the ad. It does not matter whether it's from mobile, laptop, Xbox, etc. As mentioned, they can simply change this so that they have some indication that an ad is playing (stored in a database as a boolean value) which can be read at open time and the ads can simply keep playing.**
 
 Simple Workflow (assuming you do not have batch script):
 
